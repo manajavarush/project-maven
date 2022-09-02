@@ -15,17 +15,106 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>18.0.1</version>
+        </dependency>
+
+        <!--        Сначала мы должны добавить наш jar в локальный репозиторий Maven-->
+        <dependency>
+            <groupId>com.javarush</groupId>
+            <artifactId>desktop-game-engine</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Usual compilation -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!--Добавляем наш jar с движком игры в локальный репозиторий Maven-->
+            <!--mvn install:install-file -Dfile=C:\\Users\\ХХХ\\Desktop\\project-maven-master\\lib\\desktop-game-engine.jar -DgroupId=com.javarush -DartifactId=desktop-game-engine -Dversion=1.0 -Dpackaging=jar-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <!--                        Генерируем манифест, указываем класс для запуска-->
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <!--                            Поскольку мы складываем все зависимости в папку lib нашего jar, то в пути к классам нам нужнно это указать-->
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader</mainClass>
+                        </manifest>
+                        <!--                        Добавляем кастомные параметры в наш манифест-->
+                        <manifestEntries>
+                            <Rsrc-Main-Class>com.javarush.games.racer.RacerGame</Rsrc-Main-Class>
+                            <Class-Path>./</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!--       Плагин, который заберет все нужные зависимости в папку target/dependencies-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+                    <!--                Исключаем лишние зависимости-->
+                    <includeScope>compile</includeScope>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!--Выбираем начальные фазы сборки, чтобы мы успели собрать зависимости до их упаковки в наш jar-->
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--            Тест StrangeTest не будет запущен-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+                <configuration>
+                    <excludes>
+                        <exclude>StrangeTest</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -39,6 +128,15 @@
                 </configuration>
             </plugin>
         </plugins>
+
+        <!--        Указываем, что папка dependencies - это ресурсы и их надо положить в наш jar в папку lib-->
+        <resources>
+            <resource>
+                <directory>${project.build.directory}/dependencies</directory>
+                <targetPath>lib/</targetPath>
+            </resource>
+        </resources>
+
     </build>
 
 </project>
