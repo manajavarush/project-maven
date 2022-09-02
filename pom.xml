@@ -27,7 +27,6 @@
             <version>18.0.1</version>
         </dependency>
 
-        <!--        Сначала мы должны добавить наш jar в локальный репозиторий Maven-->
         <dependency>
             <groupId>com.javarush</groupId>
             <artifactId>desktop-game-engine</artifactId>
@@ -55,8 +54,6 @@
                 </configuration>
             </plugin>
 
-            <!--Добавляем наш jar с движком игры в локальный репозиторий Maven-->
-            <!--mvn install:install-file -Dfile=C:\\Users\\ХХХ\\Desktop\\project-maven-master\\lib\\desktop-game-engine.jar -DgroupId=com.javarush -DartifactId=desktop-game-engine -Dversion=1.0 -Dpackaging=jar-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
@@ -69,14 +66,11 @@
                 <version>2.4</version>
                 <configuration>
                     <archive>
-                        <!--                        Генерируем манифест, указываем класс для запуска-->
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <!--                            Поскольку мы складываем все зависимости в папку lib нашего jar, то в пути к классам нам нужнно это указать-->
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader</mainClass>
                         </manifest>
-                        <!--                        Добавляем кастомные параметры в наш манифест-->
                         <manifestEntries>
                             <Rsrc-Main-Class>com.javarush.games.racer.RacerGame</Rsrc-Main-Class>
                             <Class-Path>./</Class-Path>
@@ -85,19 +79,16 @@
                 </configuration>
             </plugin>
 
-            <!--       Плагин, который заберет все нужные зависимости в папку target/dependencies-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
                     <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
-                    <!--                Исключаем лишние зависимости-->
                     <includeScope>compile</includeScope>
                 </configuration>
                 <executions>
                     <execution>
-                        <!--Выбираем начальные фазы сборки, чтобы мы успели собрать зависимости до их упаковки в наш jar-->
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
@@ -106,7 +97,6 @@
                 </executions>
             </plugin>
 
-            <!--            Тест StrangeTest не будет запущен-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -118,7 +108,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Run java-fx app over Maven -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -127,9 +116,9 @@
                     <mainClass>com.javarush.games.racer.RacerGame</mainClass>
                 </configuration>
             </plugin>
+
         </plugins>
 
-        <!--        Указываем, что папка dependencies - это ресурсы и их надо положить в наш jar в папку lib-->
         <resources>
             <resource>
                 <directory>${project.build.directory}/dependencies</directory>
@@ -138,5 +127,4 @@
         </resources>
 
     </build>
-
 </project>
